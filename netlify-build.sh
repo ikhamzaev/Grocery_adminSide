@@ -24,7 +24,7 @@ flutter pub get
 
 # Build for web
 echo "🔨 Building Flutter web app..."
-flutter build web --release --web-renderer html
+flutter build web --release
 
 echo "✅ Build completed successfully!"
 echo "📁 Build output directory: build/web"
