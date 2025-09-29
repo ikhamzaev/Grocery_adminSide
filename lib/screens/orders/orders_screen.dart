@@ -5,6 +5,7 @@ import '../../core/app_export.dart';
 import '../../models/order.dart';
 import '../../services/database_service.dart';
 import '../../services/analytics_service.dart';
+import '../../services/business_analytics_service.dart';
 import 'widgets/order_card.dart';
 import 'widgets/order_details_modal.dart';
 import 'widgets/order_filters_widget.dart';
@@ -130,6 +131,18 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final success = await databaseService.updateOrderStatus(order.id, newStatus);
     
     if (success) {
+      // Log business analytics event
+      try {
+        await BusinessAnalyticsService.logOrderCreated({
+          'id': order.id,
+          'customer_id': order.customerId,
+          'total_amount': order.totalAmount,
+          'status': newStatus.name,
+        });
+      } catch (e) {
+        print('Failed to log business analytics: $e');
+      }
+      
       _loadOrders();
       AppUtils.showSnackBar(context, 'Order status updated successfully');
     } else {

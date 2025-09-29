@@ -10,6 +10,7 @@ import 'services/auth_service.dart';
 import 'services/product_service.dart';
 import 'services/database_service.dart';
 import 'services/analytics_service.dart';
+import 'services/business_analytics_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,15 @@ void main() async {
   } catch (e) {
     print('DEBUG: Supabase Analytics initialization failed: $e');
     // Continue without Analytics for now
+  }
+  
+  // Initialize Business Analytics (Google Analytics + Supabase)
+  try {
+    await BusinessAnalyticsService.initialize();
+    print('DEBUG: Business Analytics initialized successfully');
+  } catch (e) {
+    print('DEBUG: Business Analytics initialization failed: $e');
+    // Continue without Business Analytics for now
   }
   
   // Set preferred orientations for admin dashboard (desktop-first)

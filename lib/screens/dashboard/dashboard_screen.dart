@@ -3,18 +3,13 @@ import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../widgets/admin_sidebar.dart';
 import '../../widgets/admin_app_bar.dart';
-import '../../services/dashboard_service.dart';
-import '../../services/analytics_service.dart';
 import 'widgets/dashboard_overview.dart';
 import 'widgets/recent_orders_section.dart';
 import 'widgets/analytics_section.dart';
+import 'widgets/business_analytics_widget.dart';
 import '../products/products_screen.dart';
 import '../categories/categories_screen.dart';
 import '../subcategories/subcategories_management_screen.dart';
-import '../orders/orders_screen.dart';
-import '../customers/customers_screen.dart';
-import '../settings/settings_screen.dart';
-import '../analytics/analytics_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -25,96 +20,50 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
-  bool _isLoading = true;
+  bool _isSidebarCollapsed = false;
 
-  // Real data for dashboard
-  Map<String, dynamic> _dashboardStats = {};
-  List<Map<String, dynamic>> _recentOrders = [];
-  List<Map<String, dynamic>> _salesAnalytics = [];
+  // Mock data for dashboard
+  final Map<String, dynamic> _dashboardStats = {
+    'totalOrders': 1247,
+    'totalRevenue': 45678.90,
+    'totalCustomers': 892,
+    'activeProducts': 156,
+    'pendingOrders': 23,
+    'todayRevenue': 1234.56,
+    'avgOrderValue': 36.67,
+    'conversionRate': 3.2,
+  };
 
-  @override
-  void initState() {
-    super.initState();
-    _loadDashboardData();
-    
-    // Track dashboard page view
-    AnalyticsService.logPageView(
-      pageName: 'admin_dashboard',
-      pageTitle: 'Admin Dashboard',
-    );
-  }
-
-  Future<void> _loadDashboardData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Load all dashboard data in parallel
-      final futures = await Future.wait([
-        DashboardService.getDashboardStats(),
-        DashboardService.getRecentOrders(limit: 5),
-        DashboardService.getSalesAnalytics(),
-      ]);
-
-      setState(() {
-        _dashboardStats = futures[0] as Map<String, dynamic>;
-        _recentOrders = futures[1] as List<Map<String, dynamic>>;
-        _salesAnalytics = futures[2] as List<Map<String, dynamic>>;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading dashboard data: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _refreshDashboard() async {
-    // Track dashboard refresh
-    AnalyticsService.logDashboardInteraction(
-      action: 'refresh',
-      section: 'dashboard_overview',
-    );
-    
-    await _loadDashboardData();
-  }
-
-  Future<void> _handleDateFilterChanged(String dateFilter) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Track date filter change
-    AnalyticsService.logDashboardInteraction(
-      action: 'filter',
-      filterType: 'date_range',
-      filterValue: dateFilter,
-      section: 'dashboard_overview',
-    );
-
-    try {
-      // Load dashboard data with date filter
-      final futures = await Future.wait([
-        DashboardService.getDashboardStats(dateFilter: dateFilter),
-        DashboardService.getRecentOrders(limit: 5, dateFilter: dateFilter),
-        DashboardService.getSalesAnalytics(dateFilter: dateFilter),
-      ]);
-
-      setState(() {
-        _dashboardStats = futures[0] as Map<String, dynamic>;
-        _recentOrders = futures[1] as List<Map<String, dynamic>>;
-        _salesAnalytics = futures[2] as List<Map<String, dynamic>>;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading dashboard data with date filter: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+  final List<Map<String, dynamic>> _recentOrders = [
+    {
+      'id': 'ORD-001',
+      'customer': 'John Doe',
+      'total': 89.99,
+      'status': 'Preparing',
+      'time': '2 min ago',
+    },
+    {
+      'id': 'ORD-002',
+      'customer': 'Jane Smith',
+      'total': 45.50,
+      'status': 'Out for Delivery',
+      'time': '15 min ago',
+    },
+    {
+      'id': 'ORD-003',
+      'customer': 'Mike Johnson',
+      'total': 123.75,
+      'status': 'Delivered',
+      'time': '1 hour ago',
+    },
+    {
+      'id': 'ORD-004',
+      'customer': 'Sarah Wilson',
+      'total': 67.25,
+      'status': 'Confirmed',
+      'time': '2 hours ago',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -129,23 +78,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               setState(() {
                 _selectedIndex = index;
               });
-              
-              // Track navigation
-              final pageNames = [
-                'admin_dashboard',
-                'admin_orders',
-                'admin_products',
-                'admin_categories',
-                'admin_subcategories',
-                'admin_customers',
-                'admin_analytics',
-                'admin_settings',
-              ];
-              
-              AnalyticsService.logPageView(
-                pageName: pageNames[index],
-                pageTitle: 'Admin ${pageNames[index].split('_')[1].toUpperCase()}',
-              );
             },
           ),
           
@@ -181,11 +113,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 2:
         return 'Products';
       case 3:
-        return 'Categories';
-      case 4:
-        return 'Subcategories';
-      case 5:
         return 'Customers';
+      case 4:
+        return 'Categories';
+      case 5:
+        return 'Subcategories';
       case 6:
         return 'Analytics';
       case 7:
@@ -200,38 +132,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0:
         return _buildDashboardContent();
       case 1:
-        return const OrdersScreen();
+        return _buildOrdersContent();
       case 2:
         return _buildProductsContent();
       case 3:
-        return _buildCategoriesContent();
+        return _buildCustomersContent();
       case 4:
-        return const SubcategoriesManagementScreen();
+        return _buildCategoriesContent();
       case 5:
-        return const CustomersScreen();
+        return const SubcategoriesManagementScreen();
       case 6:
-        return const AnalyticsScreen();
+        return _buildAnalyticsContent();
       case 7:
-        return const SettingsScreen();
+        return _buildSettingsContent();
       default:
         return _buildDashboardContent();
     }
   }
 
   Widget _buildDashboardContent() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _refreshDashboard,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           // Welcome Section
           Container(
             width: double.infinity,
@@ -273,7 +197,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Dashboard Overview Cards
           DashboardOverview(
             stats: _dashboardStats,
-            onDateFilterChanged: _handleDateFilterChanged,
+            onDateFilterChanged: (filter) {
+              // Handle date filter change
+              print('Date filter changed: $filter');
+            },
           ),
           
           const SizedBox(height: 24),
@@ -285,14 +212,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // Recent Orders
               Expanded(
                 flex: 2,
-                child: RecentOrdersSection(
-                  orders: _recentOrders,
-                  onViewAllPressed: () {
-                    setState(() {
-                      _selectedIndex = 1; // Navigate to Orders screen
-                    });
-                  },
-                ),
+                child: RecentOrdersSection(orders: _recentOrders),
               ),
               
               const SizedBox(width: 16),
@@ -300,12 +220,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // Analytics Charts
               Expanded(
                 flex: 3,
-                child: AnalyticsSection(analyticsData: _salesAnalytics),
+                child: AnalyticsSection(),
               ),
             ],
           ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -326,15 +245,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return const ProductsScreen();
   }
 
-
-  Widget _buildCategoriesContent() {
-    return const CategoriesScreen();
-  }
-
-  Widget _buildAnalyticsContent() {
+  Widget _buildCustomersContent() {
     return Center(
       child: Text(
-        'Analytics & Reports\n(Coming Soon)',
+        'Customers Management\n(Coming Soon)',
         textAlign: TextAlign.center,
         style: AppTheme.lightTheme.textTheme.headlineMedium?.copyWith(
           color: AppTheme.lightTheme.colorScheme.onSurface.withAlpha(150),
@@ -343,6 +257,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildCategoriesContent() {
+    return const CategoriesScreen();
+  }
+
+  Widget _buildAnalyticsContent() {
+    return const BusinessAnalyticsWidget();
+  }
+
+  Widget _buildSettingsContent() {
+    return Center(
+      child: Text(
+        'Settings\n(Coming Soon)',
+        textAlign: TextAlign.center,
+        style: AppTheme.lightTheme.textTheme.headlineMedium?.copyWith(
+          color: AppTheme.lightTheme.colorScheme.onSurface.withAlpha(150),
+        ),
+      ),
+    );
+  }
 
   void _handleNotificationPressed() {
     // Handle notification pressed
@@ -352,13 +285,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _handleProfilePressed() {
     // Handle profile pressed
     AppUtils.showSnackBar(context, 'Profile clicked');
-  }
-
-  Widget _buildFeaturedProductsContent() {
-    return const ProductsScreen();
-  }
-
-  Widget _buildSaleProductsContent() {
-    return const ProductsScreen();
   }
 }

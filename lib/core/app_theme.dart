@@ -318,12 +318,14 @@ class AppTheme {
       actionsIconTheme: IconThemeData(color: onSurfaceDark),
     ),
 
-    cardTheme: const CardThemeData(
+    cardTheme: CardThemeData(
+      color: surfaceDark,
       elevation: 2.0,
+      shadowColor: const Color(0x1AFFFFFF),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        borderRadius: BorderRadius.circular(8.0),
       ),
-      margin: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
     ),
 
     dataTableTheme: DataTableThemeData(
