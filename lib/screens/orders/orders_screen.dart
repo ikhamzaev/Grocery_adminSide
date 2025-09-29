@@ -136,7 +136,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         await BusinessAnalyticsService.logOrderCreated({
           'id': order.id,
           'customer_id': order.customerId,
-          'total_amount': order.totalAmount,
+          'total_amount': order.total,
           'status': newStatus.name,
         });
       } catch (e) {

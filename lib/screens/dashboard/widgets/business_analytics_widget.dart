@@ -239,53 +239,93 @@ class _BusinessAnalyticsWidgetState extends State<BusinessAnalyticsWidget> {
       {'day': 'Sun', 'revenue': 380000.0},
     ];
 
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(show: true),
-        titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                return Text(
-                  _formatCurrency(value),
-                  style: const TextStyle(fontSize: 10),
-                );
-              },
-            ),
+    try {
+      return LineChart(
+        LineChartData(
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: true,
+            horizontalInterval: 100000,
+            verticalInterval: 1,
           ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                return Text(
-                  revenueData[value.toInt()]['day'].toString(),
-                  style: const TextStyle(fontSize: 10),
-                );
-              },
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 60,
+                interval: 100000,
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    '${(value / 1000).toStringAsFixed(0)}k',
+                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  );
+                },
+              ),
             ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  final index = value.toInt();
+                  if (index >= 0 && index < revenueData.length) {
+                    return Text(
+                      revenueData[index]['day'].toString(),
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    );
+                  }
+                  return const Text('');
+                },
+              ),
+            ),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          borderData: FlBorderData(
+            show: true,
+            border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          ),
+          lineBarsData: [
+            LineChartBarData(
+              spots: revenueData.asMap().entries.map((entry) {
+                return FlSpot(entry.key.toDouble(), entry.value['revenue'] as double);
+              }).toList(),
+              isCurved: true,
+              color: Colors.blue,
+              barWidth: 3,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) {
+                  return FlDotCirclePainter(
+                    radius: 4,
+                    color: Colors.blue,
+                    strokeWidth: 2,
+                    strokeColor: Colors.white,
+                  );
+                },
+              ),
+              belowBarData: BarAreaData(
+                show: true,
+                color: Colors.blue.withOpacity(0.1),
+              ),
+            ),
+          ],
         ),
-        borderData: FlBorderData(show: true),
-        lineBarsData: [
-          LineChartBarData(
-            spots: revenueData.asMap().entries.map((entry) {
-              return FlSpot(entry.key.toDouble(), entry.value['revenue'] as double);
-            }).toList(),
-            isCurved: true,
-            color: Theme.of(context).primaryColor,
-            barWidth: 3,
-            dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(
-              show: true,
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-            ),
-          ),
-        ],
-      ),
-    );
+      );
+    } catch (e) {
+      print('Error rendering chart: $e');
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+            const SizedBox(height: 16),
+            Text('Chart Error: $e', style: TextStyle(color: Colors.red[700])),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildTopProductsSection() {

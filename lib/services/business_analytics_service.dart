@@ -1,9 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dart:js' as js;
+import '../core/supabase_config.dart';
 
 class BusinessAnalyticsService {
-  static final _client = Supabase.instance.client;
+  static SupabaseClient get _client => SupabaseConfig.client;
   
   // Google Analytics Measurement ID (from your GA4 property)
   static const String _measurementId = 'G-9J8VYZRQWN';
@@ -247,9 +248,16 @@ class BusinessAnalyticsService {
   static Future<void> _sendEvent(String eventName, Map<String, dynamic> parameters) async {
     try {
       // Use gtag function if available (from web/index.html)
-      if (js.context['gtag'] != null) {
-        js.context['gtag']('event', eventName, parameters);
-        print('📊 Sent GA event: $eventName with params: $parameters');
+      if (js.context.hasProperty('gtag')) {
+        final gtag = js.context['gtag'];
+        if (gtag != null) {
+          // Call gtag with proper parameters: gtag('event', eventName, parameters)
+          gtag.apply(['event', eventName, js.JsObject.jsify(parameters)]);
+          print('📊 Sent GA event: $eventName with params: $parameters');
+        } else {
+          print('⚠️ gtag is null, storing event locally');
+          await _storeEventLocally(eventName, parameters);
+        }
       } else {
         print('⚠️ gtag not available, storing event locally');
         // Store locally for later sync if needed
@@ -257,6 +265,8 @@ class BusinessAnalyticsService {
       }
     } catch (e) {
       print('❌ Error sending event: $e');
+      // Fallback to local storage
+      await _storeEventLocally(eventName, parameters);
     }
   }
   

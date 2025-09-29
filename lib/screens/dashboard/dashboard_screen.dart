@@ -10,6 +10,8 @@ import 'widgets/business_analytics_widget.dart';
 import '../products/products_screen.dart';
 import '../categories/categories_screen.dart';
 import '../subcategories/subcategories_management_screen.dart';
+import '../orders/orders_screen.dart';
+import '../customers/customers_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -113,11 +115,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 2:
         return 'Products';
       case 3:
-        return 'Customers';
-      case 4:
         return 'Categories';
-      case 5:
+      case 4:
         return 'Subcategories';
+      case 5:
+        return 'Customers';
       case 6:
         return 'Analytics';
       case 7:
@@ -136,11 +138,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 2:
         return _buildProductsContent();
       case 3:
-        return _buildCustomersContent();
-      case 4:
         return _buildCategoriesContent();
-      case 5:
+      case 4:
         return const SubcategoriesManagementScreen();
+      case 5:
+        return _buildCustomersContent();
       case 6:
         return _buildAnalyticsContent();
       case 7:
@@ -230,15 +232,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildOrdersContent() {
-    return Center(
-      child: Text(
-        'Orders Management\n(Coming Soon)',
-        textAlign: TextAlign.center,
-        style: AppTheme.lightTheme.textTheme.headlineMedium?.copyWith(
-          color: AppTheme.lightTheme.colorScheme.onSurface.withAlpha(150),
-        ),
-      ),
-    );
+    return const OrdersScreen();
   }
 
   Widget _buildProductsContent() {
@@ -246,15 +240,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildCustomersContent() {
-    return Center(
-      child: Text(
-        'Customers Management\n(Coming Soon)',
-        textAlign: TextAlign.center,
-        style: AppTheme.lightTheme.textTheme.headlineMedium?.copyWith(
-          color: AppTheme.lightTheme.colorScheme.onSurface.withAlpha(150),
-        ),
-      ),
-    );
+    return const CustomersScreen();
   }
 
   Widget _buildCategoriesContent() {
