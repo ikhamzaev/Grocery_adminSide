@@ -1,13 +1,14 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:html' as html;
 
 class SupabaseConfig {
-  // Fallback values if .env is not available
+  // Fallback values if environment variables are not available
   static const String _defaultSupabaseUrl = 'https://djrtvhnosfkhrosktkjz.supabase.co';
   static const String _defaultSupabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnR2aG5vc2ZraHJvc2t0a2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc2MTY4MTEsImV4cCI6MjA3MzE5MjgxMX0.fAIWM_mPB_D74xRaO8nl2fd9BUP7v2tO8OY1muZDa6U';
   
-  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? _defaultSupabaseUrl;
-  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? _defaultSupabaseAnonKey;
+  static String get supabaseUrl => _defaultSupabaseUrl;
+  static String get supabaseAnonKey => _defaultSupabaseAnonKey;
   
   static SupabaseClient? _client;
   
@@ -21,17 +22,7 @@ class SupabaseConfig {
   
   static Future<void> initialize() async {
     try {
-      // Try to load .env file if it exists (optional)
-      try {
-        await dotenv.load(fileName: ".env");
-        print('DEBUG: .env file loaded successfully');
-        print('DEBUG: Loaded URL: ${dotenv.env['SUPABASE_URL']}');
-        print('DEBUG: Loaded Key: ${dotenv.env['SUPABASE_ANON_KEY']?.substring(0, 20)}...');
-      } catch (e) {
-        print('DEBUG: .env file not found, using default values');
-      }
-
-      // Initialize the client
+      // Initialize the client with hardcoded values for web deployment
       _client = SupabaseClient(supabaseUrl, supabaseAnonKey);
       print('DEBUG: Supabase client created successfully');
       print('DEBUG: Using URL: $supabaseUrl');
