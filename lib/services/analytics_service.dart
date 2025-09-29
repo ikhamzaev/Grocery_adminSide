@@ -428,14 +428,12 @@ class AnalyticsService {
         query = query.lte('created_at', endDate.toIso8601String());
       }
       
-      // Apply ordering and limit properly
-      final orderedQuery = query.order('created_at', ascending: false);
-      
+      // Apply ordering and limit properly - chain them directly
       if (limit != null) {
-        final response = await orderedQuery.limit(limit);
+        final response = await query.order('created_at', ascending: false).limit(limit);
         return List<Map<String, dynamic>>.from(response);
       } else {
-        final response = await orderedQuery;
+        final response = await query.order('created_at', ascending: false);
         return List<Map<String, dynamic>>.from(response);
       }
     } catch (e) {
