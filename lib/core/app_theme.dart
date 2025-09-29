@@ -318,7 +318,7 @@ class AppTheme {
       actionsIconTheme: IconThemeData(color: onSurfaceDark),
     ),
 
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: surfaceDark,
       elevation: 2.0,
       shadowColor: const Color(0x1AFFFFFF),
